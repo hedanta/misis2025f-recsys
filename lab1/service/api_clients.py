@@ -32,7 +32,7 @@ class TagAPIClient:
         except requests.HTTPError as e:
             logging.error("%s HTTP error: %s", self.__class__.__name__, e)
         except requests.RequestException as e:
-            logging.error("%s error: %s", self.__class__.__name__, e)
+            logging.error("%s network error: %s", self.__class__.__name__, e)
         return None
 
 
