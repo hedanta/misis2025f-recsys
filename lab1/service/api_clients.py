@@ -18,7 +18,7 @@ class TagAPIClient:
 
     def _post(self, payload: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """
-        Функция для выполнения POST-запроса к API и возврата JSON-ответа
+        Выполненяет POST-запроса к API и возвращает JSON-ответ
 
         :param payload: данные для запроса
         :return: словарь с тегами
