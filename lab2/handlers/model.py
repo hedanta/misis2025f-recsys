@@ -25,9 +25,8 @@ async def on_model_selected(callback: CallbackQuery):
     model_key = callback.data.split(":", 1)[1]
 
     if model_key not in MODELS:
-        await callback.answer(messages.UNKNOWN_MODEL)
-        return
-
+        return await callback.answer(messages.UNKNOWN_MODEL)
+    
     set_user_model(user_id, model_key)
     model_name = MODELS[model_key]["name"]
 
