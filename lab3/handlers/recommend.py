@@ -21,12 +21,15 @@ async def cmd_recommend(message: Message):
 
     # недостаточно оценок
     if len(ratings.get(user, {})) < MIN_RATINGS_FOR_CF:
-        await message.answer(messages.FEW_SCORED.format(num=MIN_RATINGS_FOR_CF))
+        await message.answer(
+            messages.FEW_SCORED.format(num=MIN_RATINGS_FOR_CF), parse_mode="HTML"
+        )
         return await send_for_rating(message.chat.id)
 
     recs = recommend_for_user(user, ratings, TOP_K)
 
     # по текущим оценкам нет рекомендаций
+    # (корреляция со всеми 0)
     if not recs:
         await message.answer(messages.NO_RECS)
         return await send_for_rating(message.chat.id)

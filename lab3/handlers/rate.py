@@ -20,7 +20,6 @@ async def cmd_rate(message: Message):
     Аниме предлагаются до тех пор, пока не будет набрано
     минимально необходимое количество оценок
     """
-    use = get_or_create_user(message.from_user.id)
     await send_for_rating(message.chat.id)
 
 
@@ -46,9 +45,11 @@ async def process_rating_callback(callback: CallbackQuery):
 
     save_json(RATINGS_JSON, ratings)
 
-    await callback.answer(callback_msg.SAVED.format(score=score))
+    await callback.answer(callback_msg.SAVED.format(score=score), parse_mode="HTML")
     await bot.send_message(
-        callback.message.chat.id, messages.SAVED_SCORE.format(score=score)
+        callback.message.chat.id,
+        messages.SAVED_SCORE.format(score=score),
+        parse_mode="HTML",
     )
 
     # недостаточно оценок для рекомендаций
