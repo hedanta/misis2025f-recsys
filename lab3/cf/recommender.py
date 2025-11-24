@@ -4,7 +4,6 @@ from typing import List
 from cf.pearson import pearson_corr
 from models.models import UserRatings
 
-
 from typing import Dict, Optional, List, Tuple
 
 

@@ -17,8 +17,7 @@ async def cmd_stats(message: Message):
     scored = ratings.get(user, {})
 
     if not scored:
-        await message.answer(messages.NO_SAVED_SCORES)
-        return
+        return await message.answer(messages.NO_SAVED_SCORES)
 
     titles = {}
     for aid, score in scored.items():

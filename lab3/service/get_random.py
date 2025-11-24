@@ -10,7 +10,7 @@ async def send_for_rating(chat_id: int):
     """
     Отправляет случайные аниме для оценки из топ-N самых популярных
     """
-    pool = list(sorted_df["anime_id"].values[:500])
+    pool = list(sorted_df["anime_id"].values[:RANDOM_CANDIDATES])
 
     # случайная выборка
     to_show = random.sample(pool, min(1, len(pool)))
