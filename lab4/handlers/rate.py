@@ -1,0 +1,78 @@
+from aiogram import Router, F
+from aiogram.types import Message, CallbackQuery
+import logging
+
+from config import MIN_RATINGS_FOR_CF, RATINGS_JSON, WATCHED_JSON
+from config import ratings, watched, bot, svdpp_model
+from service.get_user import get_or_create_user
+from service.get_random import send_for_rating
+from service.loader import save_json
+from static import callback_msg
+from static import messages
+
+
+router = Router()
+
+
+@router.message(F.text == "/rate")
+async def cmd_rate(message: Message):
+    """
+    Отправляет аниме для оценки и сохраняет результат.
+    Аниме предлагаются до тех пор, пока не будет набрано
+    минимально необходимое количество оценок
+    """
+    user = get_or_create_user(message.from_user.id)
+    await send_for_rating(message.chat.id, user)
+
+
+@router.callback_query(
+    lambda c: c.data
+    and (
+        c.data.startswith("rate|")
+        or c.data.startswith("watched|")
+        or c.data.startswith("skip|")
+    )
+)
+async def process_rating_callback(callback: CallbackQuery):
+    data = callback.data.split("|")
+    action = data[0]
+    anime_id = data[1]
+    user = get_or_create_user(callback.from_user.id)
+
+    if action == "skip":
+        await callback.answer(callback_msg.SKIPPED)
+        return await send_for_rating(callback.message.chat.id, user)
+    elif action == "watched":
+        if user not in watched:
+            watched[user] = set()
+
+        watched[user].add(anime_id)
+        save_json(WATCHED_JSON, {u: list(items) for u, items in watched.items()})
+        svdpp_model.add_watched(user, anime_id)
+
+        await callback.answer(callback_msg.WATCHED)
+        return await send_for_rating(callback.message.chat.id, user)
+
+    score = float(data[2])
+
+    if user not in ratings:
+        ratings[user] = {}
+
+    ratings[user][str(anime_id)] = score
+    logging.info(f"Saved: user {user} | anime_id {anime_id}: {score}")
+
+    svdpp_model.add_watched(user, anime_id)
+    svdpp_model.fit_one(user, anime_id, score)
+    
+    save_json(RATINGS_JSON, ratings)
+
+    await callback.answer(callback_msg.SAVED.format(score=score), parse_mode="HTML")
+    await bot.send_message(
+        callback.message.chat.id,
+        messages.SAVED_SCORE.format(score=score),
+        parse_mode="HTML",
+    )
+
+    # недостаточно оценок для рекомендаций
+    if len(ratings.get(user, {})) < MIN_RATINGS_FOR_CF:
+        await send_for_rating(callback.message.chat.id, user)
