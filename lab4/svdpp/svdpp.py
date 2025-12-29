@@ -90,24 +90,6 @@ class SVDPlusPlus:
             return np.zeros(self.k, dtype=float)
         return np.sum(self.yi[Nu, :], axis=0) / math.sqrt(len(Nu))
 
-    def add_user(self, user: str) -> int:
-        """
-        Добавляет нового пользователя в модель.
-
-        :param user: ID пользователя
-        :returns: индекс пользователя в массивах модели
-        """
-        u_idx = len(self.user_to_index)
-        self.user_to_index[user] = u_idx
-
-        self.pu = np.vstack([self.pu, self._init_matrix(1)])
-        self.bu = np.append(self.bu, 0.0)
-
-        self.user_items_list.append([])
-
-        logger.info(f"added user: {user}")
-        return u_idx
-
     def add_watched(self, user: str, item: str) -> None:
         """
         Добавляет объект в список implicit факторов
@@ -163,7 +145,7 @@ class SVDPlusPlus:
         :returns: ошибку предсказания (rating - predict)
         """
         if user not in self.user_to_index:
-            return
+            return 0.0
 
         u_idx = self.user_to_index[user]
         i_idx = self.item_to_index[item]
