@@ -86,8 +86,6 @@ class SVDPlusPlus:
         :returns: вектор implicit факторов
         """
         Nu = self.user_items_list[user]
-        if not Nu:
-            return np.zeros(self.k, dtype=float)
         return np.sum(self.yi[Nu, :], axis=0) / math.sqrt(len(Nu))
 
     def add_watched(self, user: str, item: str) -> None:
@@ -172,11 +170,10 @@ class SVDPlusPlus:
 
         # обновление implicit
         Nu = self.user_items_list[u_idx]
-        if Nu:
-            scale = 1.0 / math.sqrt(len(Nu))
-            self.yi[Nu, :] += self.lr * (
-                err * qi_old * scale - self.reg * self.yi[Nu, :]
-            )
+        scale = 1.0 / math.sqrt(len(Nu))
+        self.yi[Nu, :] += self.lr * (
+            err * qi_old * scale - self.reg * self.yi[Nu, :]
+        )
 
         return err
 
