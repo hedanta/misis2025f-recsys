@@ -98,8 +98,7 @@ class SVDPlusPlus:
         logging.info(f"add_watched called: user={user}, item={item}")
 
         if user not in self.user_to_index:
-            logging.warning(f"user {user} NOT in model")
-            return
+            return logging.warning(f"user {user} not in model")
 
         u_idx = self.user_to_index[user]
         i_idx = self.item_to_index[item]
@@ -133,7 +132,7 @@ class SVDPlusPlus:
             + np.dot(self.qi[i_idx], self.pu[u_idx] + y_sum)
         )
 
-    def fit_one(self, user: str, item: str, rating: float) -> float:
+    def fit_one(self, user: str, item: str, rating: float) -> float | None:
         """
         Производит один шаг SGD
 
@@ -143,7 +142,7 @@ class SVDPlusPlus:
         :returns: ошибку предсказания (rating - predict)
         """
         if user not in self.user_to_index:
-            return 0.0
+            return None
 
         u_idx = self.user_to_index[user]
         i_idx = self.item_to_index[item]
@@ -223,6 +222,7 @@ class SVDPlusPlus:
                 data.append((u_idx, self.item_to_index[i], r))
 
         self.mu = float(np.mean([r for _, _, r in data]))
+        n = 0
 
         # обучение
         for epoch in range(1, self.epochs + 1):
@@ -230,8 +230,10 @@ class SVDPlusPlus:
             sq_err = 0.0
             for u_idx, i_idx, r in data:
                 err = self.fit_one(users[u_idx], items[i_idx], r)
-                sq_err += err * err
-            rmse = math.sqrt(sq_err / len(data))
+                if err is not None:
+                    sq_err += err * err
+                    n += 1
+            rmse = math.sqrt(sq_err / n)
             logger.info(f"Epoch {epoch}/{self.epochs} | RMSE: {rmse:.4f}")
 
     def save(self, path: str) -> None:
